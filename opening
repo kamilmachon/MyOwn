@@ -1,0 +1,77 @@
+import numpy as np
+import cv2
+
+cap = cv2.VideoCapture('MadMax.mp4')
+last_frame = 0
+last_frame2 = 0
+last_frame3 = 0
+last_frame4 = 0
+last_frame5 = 0
+frame = 0
+i = 0 # counting backframes
+
+while(cap.isOpened()):
+    if i == 1:
+        cv2.imshow('MadMax', last_frame)
+        p = cv2.waitKey(0)
+        if p == 98:
+            i = i + 1
+        else:
+            i = i-1
+    elif i == 2:
+        cv2.imshow('MadMax', last_frame2)
+        p = cv2.waitKey(0)
+        if p == 98:
+            i = i + 1
+        else:
+            i = i - 1
+    elif i == 3:
+        cv2.imshow('MadMax', last_frame3)
+        p = cv2.waitKey(0)
+        if p == 98:
+            i = i + 1
+        else:
+            i = i - 1
+    elif i == 4:
+        cv2.imshow('MadMax', last_frame4)
+        p = cv2.waitKey(0)
+        if p == 98:
+            i = i + 1
+        else:
+            i = i - 1
+    elif i == 5:
+        cv2.imshow('MadMax', last_frame5)
+        p = cv2.waitKey(0)
+        if p == 98:
+            i = i + 1
+        else:
+            i = i - 1
+
+    elif i == 0:
+        last_frame5 = last_frame4
+        last_frame4 = last_frame3
+        last_frame3 = last_frame2
+        last_frame2 = last_frame
+        last_frame = frame
+
+        ret, frame = cap.read()
+        cv2.imshow('MadMax', frame)
+        k = cv2.waitKey(0)
+
+        if k == 27:
+            break
+        elif k == 98: #98 == "b" key
+            i = i + 1
+            print "going back"
+    else:
+        print "sorry, too old"
+        i = i - 1
+
+
+
+
+
+
+cap.relase()
+cv2.destroyAllWindows()
+
