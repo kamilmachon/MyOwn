@@ -40,13 +40,13 @@ def add_static_L(space):
     floor7 = pymunk.Segment(space.static_body, (700, 250), (740, 280), 5)
     floor7.friction = 1.0
 
-    floor8 = pymunk.Segment(space.static_body, (740, 280), (820, 380), 5)
+    floor8 = pymunk.Segment(space.static_body, (740, 280), (820, 340), 5)
     floor8.friction = 1.0
 
-    floor9 = pymunk.Segment(space.static_body, (820, 380), (860, 380), 5)
+    floor9 = pymunk.Segment(space.static_body, (820, 340), (860, 340), 5)
     floor9.friction = 1.0
 
-    floor10 = pymunk.Segment(space.static_body, (860, 380), (880, 180), 5)
+    floor10 = pymunk.Segment(space.static_body, (860, 340), (880, 180), 5)
     floor10.friction = 1.0
 
     floor11 = pymunk.Segment(space.static_body, (880, 180), (1000, 180), 5)
@@ -175,7 +175,7 @@ def car(space, wheel_mass, wheel_radius, density, wheel1_pos, wheel2_pos, wheel_
        pymunk.SimpleMotor(wheel2_b, chassi_b, -speed2)
     )
 
-    return wheel1_b
+    return wheel1_b, wheel2_b
 
 def los_probki(il_arg, il_probek, mins, maxs):
 
@@ -214,13 +214,24 @@ def simulate(wheel_mass, wheel_radius, density, wheel1_pos, wheel2_pos, wheel_fr
     final = [0] * amount
     space = [0] * amount
     track = [0] * amount
+    track2 = [0] * amount
+    posx = [0] * amount
+    posy = [0] * amount
+    zakazane = [0] * amount
+    poj = [0] * amount
+    for i in range(amount):
+        poj[i] = [0] * 16
+    k = 0
+    t = 0
     probka = los_probki(17, amount, [10,6,10,15,15,1,0,0,   -25,-8,-25,-8,-25,-8,-25,-8,    0], [100,17,60,45,45,3,15,15,   25,8,25,8,25,8,25,8,   0])
     for i in range(amount):
          space[i] = pymunk.Space()
          space[i].gravity = (0.0, -900.0)
          lines = add_static_L(space[i])
-         track[i] = car(space[i], probka[i][0], probka[i][1], probka[i][2], probka[i][3], probka[i][4], probka[i][5], probka[i][6], probka[i][7],
+         track[i], track2[i] = car(space[i], probka[i][0], probka[i][1], probka[i][2], probka[i][3], probka[i][4], probka[i][5], probka[i][6], probka[i][7],
                                   (probka[i][8], probka[i][9]), (probka[i][10], probka[i][11]), (probka[i][12], probka[i][13]), (probka[i][14], probka[i][15]))
+         poj[i] = [probka[i][0], probka[i][1], probka[i][2], probka[i][3], probka[i][4], probka[i][5], probka[i][6], probka[i][7],
+                                  probka[i][8], probka[i][9], probka[i][10], probka[i][11], probka[i][12], probka[i][13], probka[i][14], probka[i][15]]
 
 
     draw_options = pymunk.pygame_util.DrawOptions(screen)
@@ -237,25 +248,49 @@ def simulate(wheel_mass, wheel_radius, density, wheel1_pos, wheel2_pos, wheel_fr
         for i in range(amount):
             space[i].step(1/50.0)
 
+        t += 1
+        if not t%50:
+            if k > 0:
+                for i in range(amount):
+                    if track[i].position[0] - posx[i] > 190 or track[i].position[0] - posx[i] < -190:
+                        zakazane[i] = 1
+                    elif track[i].position[1] - posy[i] > 180 or track[i].position[1] - posy[i] < -180:
+                        zakazane[i] = 1
+
+            for i in range(amount):
+                posx[i] = track[i].position[0]
+                posy[i] = track[i].position[1]
+                k += 1
+
+            for i in range(amount):
+                wheels_dist = np.sqrt((track[0].position[0] - track2[0].position[0])**2 + (track[0].position[1] - track2[0].position[1])**2)
+                if wheels_dist < 30 or wheels_dist > 100:
+                    zakazane[i] = 1
+
         pygame.display.flip()
         clock.tick(50)
         time = pygame.time.get_ticks()/1000
+        print np.sqrt((track[0].position[0] - track2[0].position[0])**2 + (track[0].position[1] - track2[0].position[1])**2)
         if time > 12:
             for i in range(amount):
-                if int(track[i].position[0]) > 0 and int(track[i].position[0]) < 1700:
+                if int(track[i].position[0]) > 0 and int(track[i].position[0]) < 1700 and int(track[i].position[1] < 350 and zakazane[i] == 0):
                     probka[i][16] =  int(track[i].position[0])
 
             break
     for i in range(amount):
         print probka[i][16]
+    print "zakazane:", zakazane[0]
+
+    csv0=open("zakazane.csv",'w')
+    wr0 = csv.writer(csv0)
+
+    for i in range(amount):
+        if zakazane[i] == 1:
+            wr0.writerow(poj[i])
 
     csv_file=open("nowa_paczka.csv",'a')
     wr = csv.writer(csv_file)
     wr.writerows(probka)
-
-
-
-
 
 
 
